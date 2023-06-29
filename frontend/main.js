@@ -6,12 +6,14 @@ const quantity = document.getElementById("quantity");
 
 form.addEventListener("submit", onSubmit);
 
-// window.addEventListener("DOMContentLoaded", async () => {
-//   const expenses = await axios.get("http://localhost:3000/get-expense");
-//   for (let i = 0; i < expenses.data.length; i++) {
-//     display(expenses.data[i]);
-//   }
-// });
+async function getData() {
+  const candies = await axios.get("http://localhost:3000/get-candy");
+  for (let i = 0; i < candies.data.length; i++) {
+    display(candies.data[i]);
+  }
+}
+
+window.addEventListener("DOMContentLoaded", getData);
 
 //function to run on form submit
 async function onSubmit(e) {
@@ -32,12 +34,9 @@ async function onSubmit(e) {
         quantity: quantity.value,
       };
       console.log(newData);
-      // const res = await axios.post(
-      //   "http://localhost:3000/add-expense",
-      //   newData
-      // );
-      // console.log(res.data.expenseData);
-      // display(res.data.expenseData);
+      const res = await axios.post("http://localhost:3000/add-candy", newData);
+      console.log(res);
+      display(res.data);
       name.value = "";
       description.value = "";
       price.value = "";
@@ -49,25 +48,38 @@ async function onSubmit(e) {
 }
 function display(data) {
   const parentNode = document.getElementById("display");
-  const childHTML = `<li id="${data.description}">${data.amount}-${data.description}-${data.category} <button type="button" onclick = "deleteExpense('${data.id}','${data.description}')">Delete Expense</button> <button type="button" onclick = "editExpense('${data.id}','${data.amount}','${data.description}','${data.category}')">Edit Expense</button> </li>`;
+  const childHTML = `<li id="listItem">${data.name}-${data.description}-₹${data.price}- <span id="${data.id}">${data.quantity} </span>
+  <button type="button" onclick="buyOne(${data.id})">Buy One</button>
+  <button type="button" onclick="buyTwo(${data.id})">Buy Two</button>
+  <button type="button" onclick="buyThree(${data.id})">Buy Three</button></li>`;
   parentNode.innerHTML = parentNode.innerHTML + childHTML;
 }
-//remove user from screen
-function deleteExpense(id, desc) {
-  axios
-    .delete(`http://localhost:3000/delete-expense/${id}`)
-    .then(() => {
-      const node = document.getElementById(desc);
-      node.remove();
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+async function buyOne(id) {
+  try {
+    await axios.put(`http://localhost:3000/put-candy/${id}/1`);
+    count(id, 1);
+  } catch (error) {
+    console.log(error);
+  }
 }
-//edit user
-const editExpense = (id, amount, desc, categ) => {
-  amouunt.value = amount;
-  description.value = desc;
-  category.value = categ;
-  deleteExpense(id, desc);
-};
+async function buyTwo(id) {
+  try {
+    await axios.put(`http://localhost:3000/put-candy/${id}/2`);
+    count(id, 2);
+  } catch (error) {
+    console.log(error);
+  }
+}
+async function buyThree(id) {
+  try {
+    await axios.put(`http://localhost:3000/put-candy/${id}/3`);
+    count(id, 3);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+function count(id, amount) {
+  const quantity = document.getElementById(id);
+  quantity.innerHTML = quantity.innerHTML - amount;
+}
